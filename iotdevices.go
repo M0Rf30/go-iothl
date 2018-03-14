@@ -151,11 +151,12 @@ func (identity *IotPeerData) Init() {
 func main() {
 	iot := IotPeerData{}
 	iot.Init()
-	fmt.Println("{\"" + iot.HumanName + "\"" +
-		",\"" + iot.PublicKey + "\"" +
-		",\"" + iot.MACaddress + "\"" +
-		",\"" + iot.AlternativeID + "\"" +
-		",\"" + iot.Serial + "\"" +
-		",\"" + iot.IPFSaddress + "\"" +
-		",\"" + iot.TorAddress + "\"}")
+	fmt.Println("{\"Args\":[" +
+		"\"" + iot.HumanName + "\"," +
+		"\"" + iot.PublicKey + "\"," +
+		"\"" + iot.MACaddress + "\"," +
+		"\"" + iot.AlternativeID + "\"," +
+		"\"" + iot.Serial + "\"," +
+		"\"" + iot.IPFSaddress + "\"," +
+		"\"" + iot.TorAddress + "\"]}")
 }

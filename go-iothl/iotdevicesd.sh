@@ -1,5 +1,15 @@
 #!/bin/bash
 
+CHANNEL_NAME="$1"
+DELAY="$2"
+: ${CHANNEL_NAME:="mychannel"}
+: ${TIMEOUT:="60"}
+COUNTER=1
+MAX_RETRY=5
+ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/iot.net/orderers/orderer.iot.net/msp/tlscacerts/tlsca.iot.net-cert.pem
+
+echo "Channel name : "$CHANNEL_NAME#
+
 # verify the result of the end-to-end test
 verifyResult () {
 	if [ $1 -ne 0 ] ; then
@@ -27,6 +37,23 @@ setGlobals () {
 	env |grep CORE
 }
 
+updateAnchorPeers() {
+  PEER=$1
+  setGlobals $PEER
+
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+		peer channel update -o orderer.iot.net:7050 -c $CHANNEL_NAME -f ./channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx >&log.txt
+	else
+		peer channel update -o orderer.iot.net:7050 -c $CHANNEL_NAME -f ./channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
+	fi
+	res=$?
+	cat log.txt
+	verifyResult $res "Anchor peer update failed"
+	echo "===================== Anchor peers for org \"$CORE_PEER_LOCALMSPID\" on \"$CHANNEL_NAME\" is updated successfully ===================== "
+	sleep $DELAY
+	echo
+}
+
 ## Sometimes Join takes time hence RETRY atleast for 5 times
 joinWithRetry () {
 	peer channel join -b $CHANNEL_NAME.block  >&log.txt
@@ -44,11 +71,121 @@ joinWithRetry () {
 }
 
 joinChannel () {
-	for ch in 0 1 ; do
-		setGlobals $ch
-		joinWithRetry $ch
-		echo "===================== PEER$ch joined on the channel \"$CHANNEL_NAME\" ===================== "
+		setGlobals 2
+		joinWithRetry 2
+		echo "===================== PEER2 joined on the channel \"$CHANNEL_NAME\" ===================== "
 		sleep $DELAY
 		echo
-	done
 }
+
+installChaincode () {
+	PEER=$1
+	setGlobals $PEER
+	peer chaincode install -n mycc -v 1.0 -p github.com/M0Rf30/chaincode >&log.txt
+	res=$?
+	cat log.txt
+        verifyResult $res "Chaincode installation on remote peer PEER$PEER has Failed"
+	echo "===================== Chaincode is installed on remote peer PEER$PEER ===================== "
+	echo
+}
+
+instantiateChaincode () {
+	PEER=$1
+	setGlobals $PEER
+	# while 'peer chaincode' command can get the orderer endpoint from the peer (if join was successful),
+	# lets supply it directly as we know it using the "-o" option
+	if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+		peer chaincode instantiate -o orderer.iot.net:7050 -C $CHANNEL_NAME -n mycc -v 1.0 -c '{"Args":["a","b"]}' -P "OR	('acmeMSP.member')" >&log.txt
+	else
+		peer chaincode instantiate -o orderer.iot.net:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -v 1.0 -c '{"Args":["a","b"]}' -P "OR	('acmeMSP.member')" >&log.txt
+	fi
+	res=$?
+	cat log.txt
+	verifyResult $res "Chaincode instantiation on PEER$PEER on channel '$CHANNEL_NAME' failed"
+	echo "===================== Chaincode Instantiation on PEER$PEER on channel '$CHANNEL_NAME' is successful ===================== "
+	echo
+}
+
+chaincodeQuery () {
+  PEER=$1
+  echo "===================== Querying on PEER$PEER on channel '$CHANNEL_NAME'... ===================== "
+  setGlobals $PEER
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while test "$(($(date +%s)-starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+     sleep $DELAY
+     echo "Attempting to Query PEER$PEER ...$(($(date +%s)-starttime)) secs"
+     peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["query","a"]}' >&log.txt
+     test $? -eq 0 && VALUE=$(cat log.txt | awk '/Query Result/ {print $NF}')
+     let rc=0
+  done
+  echo
+  cat log.txt
+  if test $rc -eq 0 ; then
+	echo "===================== Query on PEER$PEER on channel '$CHANNEL_NAME' is successful ===================== "
+  else
+	echo "!!!!!!!!!!!!!!! Query result on PEER$PEER is INVALID !!!!!!!!!!!!!!!!"
+        echo "================== ERROR !!! FAILED to execute End-2-End Scenario =================="
+	echo
+	exit 1
+  fi
+}
+
+chaincodeInvoke () {
+	PEER=$1
+	setGlobals $PEER
+	# while 'peer chaincode' command can get the orderer endpoint from the peer (if join was successful),
+	# lets supply it directly as we know it using the "-o" option
+	if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+		peer chaincode invoke -o orderer.iot.net:7050 -C $CHANNEL_NAME -n mycc -c '{"Args":["transfer","a","b"]}' >&log.txt
+	else
+		peer chaincode invoke -o orderer.iot.net:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -c '{"Args":["invoke","a","b"]}' >&log.txt
+	fi
+	res=$?
+	cat log.txt
+	verifyResult $res "Invoke execution on PEER$PEER failed "
+	echo "===================== Invoke transaction on PEER$PEER on channel '$CHANNEL_NAME' is successful ===================== "
+	echo
+}
+
+## Join all the peers to the channel
+echo "Having all peers join the channel..."
+joinChannel
+
+## Set the anchor peers for each org in the channel
+echo "Updating anchor peers for acme..."
+#updateAnchorPeers 0
+
+## Install chaincode on Peer0/acme
+echo "Installing chaincode on acme/peer0..."
+installChaincode 0
+
+#Instantiate chaincode on Peer0/acme
+echo "Instantiating chaincode on acme/peer0..."
+instantiateChaincode 0
+
+#Query on chaincode on Peer0/acme
+echo "Querying chaincode on acme/peer0..."
+chaincodeQuery 0
+
+#Invoke on chaincode on Peer0/acme
+echo "Sending invoke transaction on acme/peer0..."
+chaincodeInvoke 0
+
+echo
+echo "========= All GOOD, BYFN execution completed =========== "
+echo
+
+echo
+echo " _____   _   _   ____   "
+echo "| ____| | \ | | |  _ \  "
+echo "|  _|   |  \| | | | | | "
+echo "| |___  | |\  | | |_| | "
+echo "|_____| |_| \_| |____/  "
+echo
+
+exit 0
