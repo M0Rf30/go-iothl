@@ -1,0 +1,57 @@
+# Maintainer: Jakub "Kubuxu" Sztandera <kubuxu@protonmail.ch>
+# Contributor: Frederik “Freso” S. Olesen <freso.dk@gmail.com>
+# Contributor: kpcyrd <git@rxv.cc>
+# Contributor: Ian Naval <ianonavy@gmail.com>
+
+_pkgname=go-iothl
+pkgname=$_pkgname-git
+pkgver=0.1
+pkgrel=1
+pkgdesc='IoT identity on HL'
+url="https://github.com/M0Rf30/$_pkgname"
+arch=('i686' 'x86_64' 'armv7h')
+license=('MIT')
+makedepends=('git' 'go')
+options=(!strip)
+source=("git+${url}.git")
+
+export GOOS=linux
+case "$CARCH" in
+        x86_64) export GOARCH=amd64 ;;
+        i686) export GOARCH=386 GO386=387 ;;
+        arm) export GOARCH=arm GOARM=5 ;;
+        armv6h) export GOARCH=arm GOARM=6 ;;
+        armv7h) export GOARCH=arm GOARM=7 ;;
+        aarch64) export GOARCH=arm64 ;;
+esac
+
+
+prepare() {
+  mkdir -p "$srcdir"/src/github.com/M0Rf30
+  ln -sf "$srcdir/$_pkgname" "$srcdir"/src/github.com/M0Rf30/
+}
+
+build() {
+  # Required for go get
+  export GOPATH="$srcdir"
+  export GOBIN="$srcdir/bin"
+  export PATH=$PATH:$GOPATH/bin
+
+  msg2 'Installing dependencies...'
+  cd "$GOPATH"/src
+  go get -d -v github.com/M0Rf30/misc
+  go get -d -v github.com/M0Rf30/gopsutil/cpu
+  go get -d -v github.com/M0Rf30/namesgenerator   
+
+  msg2 'Building binary...'
+  cd "$GOPATH"/src/github.com/M0Rf30/go-iothl
+  go build
+}
+
+package() {
+  msg2 'Packaging binary...'
+  cd $srcdir/go-iothl
+  install -Dm 755 go-iothl "${pkgdir}/usr/bin/iotdevices"
+}
+
+md5sums=('SKIP')
