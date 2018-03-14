@@ -95,7 +95,7 @@ instantiateChaincode () {
 	# while 'peer chaincode' command can get the orderer endpoint from the peer (if join was successful),
 	# lets supply it directly as we know it using the "-o" option
 	if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
-		peer chaincode instantiate -o orderer.iot.net:7050 -C $CHANNEL_NAME -n mycc -v 1.0 -c '{"Args":["a","b"]}' -P "OR	('acmeMSP.member')" >&log.txt
+		peer chaincode instantiate -o orderer.iot.net:7050 -C $CHANNEL_NAME -n mycc -v 1.0 -c "$(iotdevices)" -P "OR	('acmeMSP.member')" >&log.txt
 	else
 		peer chaincode instantiate -o orderer.iot.net:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -v 1.0 -c '{"Args":["a","b"]}' -P "OR	('acmeMSP.member')" >&log.txt
 	fi
@@ -162,7 +162,7 @@ echo "Updating anchor peers for acme..."
 
 ## Install chaincode on Peer0/acme
 echo "Installing chaincode on acme/peer0..."
-installChaincode 0
+#installChaincode 0
 
 #Instantiate chaincode on Peer0/acme
 echo "Instantiating chaincode on acme/peer0..."
