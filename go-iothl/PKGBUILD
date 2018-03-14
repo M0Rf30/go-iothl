@@ -45,13 +45,13 @@ build() {
 
   msg2 'Building binary...'
   cd "$GOPATH"/src/github.com/M0Rf30/go-iothl
-  go build
+  go build -o iotdevices
 }
 
 package() {
   msg2 'Packaging binary...'
   cd $srcdir/go-iothl
-  install -Dm 755 go-iothl "${pkgdir}/usr/bin/iotdevices"
+  install -Dm 755 iotdevices "${pkgdir}/usr/bin/iotdevices"
 }
 
 md5sums=('SKIP')
