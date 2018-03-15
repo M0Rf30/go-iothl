@@ -13,7 +13,9 @@ arch=(armv6h armv7h arm aarch64 i686 x86_64)
 license=('MIT')
 makedepends=('git' 'go')
 options=(!strip)
-source=("git+${url}.git")
+source=("git+${url}.git"
+iotdevicesd.sh
+iotdevicesd.service)
 
 export GOOS=linux
 case "$CARCH" in
@@ -52,6 +54,10 @@ package() {
   msg2 'Packaging binary...'
   cd $srcdir/go-iothl
   install -Dm 755 iotdevices "${pkgdir}/usr/bin/iotdevices"
+  install -Dm 755 ../iotdevicesd.sh "${pkgdir}/usr/bin/iotdevicesd"
+  install -Dm 755 ../iotdevicesd.service "${pkgdir}/usr/lib/systemd/system/iotdevicesd.service"
 }
 
-md5sums=('SKIP')
+md5sums=('SKIP'
+         '8acdfce50396102e90cb25c96ed356bf'
+         '5d6ae5b76f9cb070592706b50e9bbeb7')

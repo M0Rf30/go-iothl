@@ -33,7 +33,19 @@ setGlobals () {
 			CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/acme.iot.net/users/Admin@acme.iot.net/msp
 		fi
 	fi
-
+	CORE_LOGGING_LEVEL=DEBUG
+    CORE_PEER_TLS_ENABLED=true
+    CORE_PEER_GOSSIP_USELEADERELECTION=true
+    CORE_PEER_GOSSIP_ORGLEADER=false
+    CORE_PEER_PROFILE_ENABLED=true
+    CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+    CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+    CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+	CORE_PEER_ID=peer2.acme.iot.net
+    CORE_PEER_ADDRESS=peer2.acme.iot.net:7051
+    CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.acme.iot.net:7051
+    CORE_PEER_GOSSIP_BOOTSTRAP=peer0.acme.iot.net:7051
+    CORE_PEER_LOCALMSPID=acmeMSP
 	env |grep CORE
 }
 

@@ -1,0 +1,8 @@
+[Unit]
+Description=Hyperledger IoT identity daemon transmitter
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/iotdevicesd
+
