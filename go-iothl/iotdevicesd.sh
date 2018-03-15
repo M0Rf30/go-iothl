@@ -2,7 +2,7 @@
 
 CHANNEL_NAME="mychannel"
 DELAY="60"
-TIMEOUT:="60"
+TIMEOUT="10000000"
 COUNTER=1
 MAX_RETRY=5
 ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/iot.net/orderers/orderer.iot.net/msp/tlscacerts/tlsca.iot.net-cert.pem
