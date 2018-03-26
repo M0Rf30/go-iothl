@@ -1,5 +1,6 @@
 #!/bin/bash
 
+FABRIC_CFG_PATH="/etc/hyperledger/fabric" 
 CHANNEL_NAME="mychannel"
 DELAY="60"
 TIMEOUT="10000000"
