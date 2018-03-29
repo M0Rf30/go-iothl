@@ -17,7 +17,7 @@ pkgbase = go-iothl-git
 	source = iotdevicesd.sh
 	source = iotdevicesd.service
 	md5sums = SKIP
-	md5sums = 245cd74ef828dd872a31bb99c5c24251
+	md5sums = 05524b5a14d9747a73a9c2d88642d737
 	md5sums = 5d6ae5b76f9cb070592706b50e9bbeb7
 
 pkgname = go-iothl-git

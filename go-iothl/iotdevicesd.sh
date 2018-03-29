@@ -2,7 +2,7 @@
 
 FABRIC_CFG_PATH="/etc/hyperledger/fabric" 
 CHANNEL_NAME="mychannel"
-DELAY="60"
+DELAY="2"
 TIMEOUT="10000000"
 COUNTER=1
 MAX_RETRY=5
