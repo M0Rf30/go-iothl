@@ -52,7 +52,7 @@ func (identity *IotPeerData) GetMac() string {
 		}
 	} else {
 		fmt.Println("Error on peer NICs")
-		MACaddress = ""
+		MACaddress = "MAC empty"
 	}
 	return MACaddress
 }
@@ -63,7 +63,7 @@ func (identity *IotPeerData) GetSerial() string {
 	cpuInfo, _ := cpu.Info()
 	serial := cpuInfo[0].Serial
 	if serial == "" {
-		serial = "0000000000000000"
+		serial = "SERIAL empty"
 	}
 	return serial
 }
@@ -81,6 +81,8 @@ func (identity *IotPeerData) GetPublicKey() string {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+	} else {
+		pubKey = "GPG empty"
 	}
 
 	return pubKey
@@ -106,7 +108,7 @@ func (identity *IotPeerData) GetTorAddress() string {
 		hostname, err := misc.ReadLines(torHostnamePath)
 		if err != nil {
 			fmt.Println("Errors on hostname retrieving")
-			torAddress = ""
+			torAddress = "TOR empty"
 		} else {
 			torAddress = hostname[0]
 		}
@@ -130,7 +132,7 @@ func (identity *IotPeerData) GetIPFS() string {
 		if err == nil {
 			ipfsAddress = j.Identity.PeerID
 		} else {
-			ipfsAddress = ""
+			ipfsAddress = "IPFS empty"
 		}
 	}
 	return ipfsAddress
@@ -151,12 +153,12 @@ func (identity *IotPeerData) Init() {
 func main() {
 	iot := IotPeerData{}
 	iot.Init()
-	fmt.Println("{\"Args\":[\"init\"," +
+	fmt.Println("'{\"Args\":[" +
 		"\"" + iot.HumanName + "\"," +
 		"\"" + iot.PublicKey + "\"," +
 		"\"" + iot.MACaddress + "\"," +
 		"\"" + iot.AlternativeID + "\"," +
 		"\"" + iot.Serial + "\"," +
 		"\"" + iot.IPFSaddress + "\"," +
-		"\"" + iot.TorAddress + "\"]}")
+		"\"" + iot.TorAddress + "\"]}'")
 }
