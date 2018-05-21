@@ -112,6 +112,8 @@ func (identity *IotPeerData) GetTorAddress() string {
 		} else {
 			torAddress = hostname[0]
 		}
+	} else {
+		torAddress = "TOR empty"
 	}
 	return torAddress
 }
@@ -147,18 +149,17 @@ func (identity *IotPeerData) Init() {
 	identity.Serial = identity.GetSerial()
 	identity.TorAddress = identity.GetTorAddress()
 	identity.AlternativeID = identity.GetAlternativeID(identity.MACaddress, identity.Serial)
-
 }
 
 func main() {
 	iot := IotPeerData{}
 	iot.Init()
-	fmt.Println("'{\"Args\":[" +
+	fmt.Println("{\"Args\":[\"init\"," +
 		"\"" + iot.HumanName + "\"," +
 		"\"" + iot.PublicKey + "\"," +
 		"\"" + iot.MACaddress + "\"," +
 		"\"" + iot.AlternativeID + "\"," +
 		"\"" + iot.Serial + "\"," +
 		"\"" + iot.IPFSaddress + "\"," +
-		"\"" + iot.TorAddress + "\"]}'")
+		"\"" + iot.TorAddress + "\"]}")
 }
