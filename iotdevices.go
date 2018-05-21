@@ -154,7 +154,7 @@ func (identity *IotPeerData) Init() {
 func main() {
 	iot := IotPeerData{}
 	iot.Init()
-	fmt.Println("{\"Args\":[\"init\"," +
+	fmt.Println("{\"Args\":[\"initIotLedger\"," +
 		"\"" + iot.HumanName + "\"," +
 		"\"" + iot.PublicKey + "\"," +
 		"\"" + iot.MACaddress + "\"," +
