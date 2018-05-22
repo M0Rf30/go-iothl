@@ -77,7 +77,7 @@ func (identity *IotPeerData) GetPublicKey() string {
 	var err error
 	if hlpub == true {
 		publicKey, err = misc.ReadLines(HLPublicKey)
-		pubKey = strings.Join(publicKey, "\n")
+		pubKey = strings.Join(publicKey, "")
 		if err != nil {
 			fmt.Println(err.Error())
 		}
